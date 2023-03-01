@@ -1,3 +1,3 @@
-import cardsFactory from "./factories/cardsFactory.js"
+import cardsFactory from "./factories/cardsFactory.js";
 
-await cardsFactory.initalize()
+await cardsFactory.initialize();
