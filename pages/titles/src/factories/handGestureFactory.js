@@ -7,19 +7,22 @@ import HandGestureController from "./../controllers/handGestureController.js";
 import HandGestureView from "./../views/handGestureView.js";
 import HandGestureService from "./../services/handGestureService.js";
 import Camera from "../../../lib/shared/camera.js";
+import { fingerLookupIndexes } from "../../../lib/shared/util.js";
 
 const [rootPath] = window.location.href.split("/pages/");
 const camera = await Camera.init();
+const styler = new PseudoStyler();
 
 const handGestureFactory = {
   async initialize() {
     return HandGestureController.initialize({
       camera,
-      view: new HandGestureView(),
+      view: new HandGestureView({ fingerLookupIndexes, styler }),
       service: new HandGestureService({
         fingerpose: window.fp,
         handPoseDetection: window.handPoseDetection,
         handsVersion: window.VERSION,
+        fingerLookupIndexes,
       }),
     });
   },

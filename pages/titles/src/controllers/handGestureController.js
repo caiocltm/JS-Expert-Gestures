@@ -1,6 +1,7 @@
 import { prepareRunChecker } from "../../../lib/shared/util.js";
 
-const { shouldRun: shouldScroll } = prepareRunChecker({ timerDelay: 195 });
+const { shouldRun: shouldScroll } = prepareRunChecker({ timerDelay: 300 });
+const { shouldRun: shouldClick } = prepareRunChecker({ timerDelay: 300 });
 
 export default class HandGestureController {
   #view;
@@ -10,7 +11,6 @@ export default class HandGestureController {
     direction: "",
     y: 0,
   };
-  #pixelsPerScroll = window.innerHeight * 0.095;
 
   constructor({ view, service, camera }) {
     this.#view = view;
@@ -40,7 +40,19 @@ export default class HandGestureController {
     try {
       const hands = await this.#service.estimateHands(this.#camera.video);
 
+      this.#view.clearCanvas();
+
+      if (hands?.length) this.#view.drawResults(hands);
+
       for await (const { event, x, y } of this.#service.detectGestures(hands)) {
+        if (event === "click") {
+          if (!shouldClick()) continue;
+
+          this.#view.clickOnElement(x, y);
+
+          continue;
+        }
+
         console.log(event);
 
         if (!shouldScroll()) continue;
@@ -53,14 +65,26 @@ export default class HandGestureController {
   }
 
   #scrollPage(direction) {
-    if (this.#lastDirection.direction === direction) {
-      this.#lastDirection.y =
-        direction === "scroll-down"
-          ? this.#lastDirection.y + this.#pixelsPerScroll
-          : this.#lastDirection.y - this.#pixelsPerScroll;
-    } else {
+    const pixelsPerScroll = this.#view.getScrollHeight() * 0.09;
+
+    if (this.#lastDirection.direction !== direction) {
       this.#lastDirection.direction = direction;
+      this.#view.scrollPage(this.#lastDirection.y);
+
+      return;
     }
+
+    if (
+      direction === "scroll-down" &&
+      this.#lastDirection.y + pixelsPerScroll < this.#view.getScrollHeight()
+    )
+      this.#lastDirection.y += pixelsPerScroll;
+
+    if (
+      direction === "scroll-up" &&
+      this.#lastDirection.y - pixelsPerScroll >= 0
+    )
+      this.#lastDirection.y -= pixelsPerScroll;
 
     this.#view.scrollPage(this.#lastDirection.y);
   }

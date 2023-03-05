@@ -1,18 +1,22 @@
-import {
-  knownGestures,
-  gesturesStrings,
-} from "../../../lib/shared/gestures.js";
+import { knownGestures } from "../../../lib/shared/gestures.js";
 
 export default class HandGestureService {
   #gestureEstimator;
   #handPoseDetection;
   #handsVersion;
   #detector = null;
+  #fingerLookupIndexes;
 
-  constructor({ fingerpose, handPoseDetection, handsVersion }) {
+  constructor({
+    fingerpose,
+    handPoseDetection,
+    handsVersion,
+    fingerLookupIndexes,
+  }) {
     this.#gestureEstimator = new fingerpose.GestureEstimator(knownGestures);
     this.#handPoseDetection = handPoseDetection;
     this.#handsVersion = handsVersion;
+    this.#fingerLookupIndexes = fingerLookupIndexes;
   }
 
   async estimate(keypoints3D) {
